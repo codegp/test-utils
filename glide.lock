@@ -1,12 +1,11 @@
-hash: 56d2643b240a41053ea71913f73483b14d8f88bce6d34db2c4035ec6f80e64e9
-updated: 2016-10-21T18:29:01.902629629-06:00
+hash: 4e143baa93c6e2b26a58b29a618c84041cd2de5cea5c267b930e945af4c916f5
+updated: 2016-10-22T17:25:45.67155223-06:00
 imports:
 - name: cloud.google.com/go
   version: 3b1ae45394a234c385be014e9a488f2bb6eef821
   subpackages:
   - datastore
   - storage
-  - internal/optional
   - compute/metadata
   - internal
 - name: git.apache.org/thrift.git
@@ -16,17 +15,17 @@ imports:
 - name: github.com/blang/semver
   version: 31b736133b98f26d5e078ec9eb591666edfd091f
 - name: github.com/codegp/cloud-persister
-  version: f32b964c7d7bb389701be9d4c769b7ff9e71014a
+  version: 23b8263a4676fa593cefd96e8ce6b8cfa682d53a
   subpackages:
   - models
 - name: github.com/codegp/env
-  version: 336f55c547ee75bb1941c9e5bf4dda6586332224
+  version: 995611706bf3d9a4cff43cd004fd44919493995f
 - name: github.com/codegp/game-object-types
-  version: f4be21842bbbce5f419ba44aada8778723e8205b
+  version: 2a3c7fd5f280683c6c4e56f04ddbe202c4ccdb6e
   subpackages:
   - types
 - name: github.com/codegp/kube-client
-  version: 7dc023beb154d29c246e75bc182d920b3d875519
+  version: f7d5370a64312d89d2f583316cd14b9f43dfc56a
 - name: github.com/coreos/go-oidc
   version: 5644a2f50e2d2d5ba0b474bc5bc55fea1925936d
   subpackages:
@@ -151,8 +150,6 @@ imports:
   - version
 - name: github.com/google/gofuzz
   version: bbcb9da2d746f8bdbd6a936686a0a6067ada0ec5
-- name: github.com/googleapis/gax-go
-  version: 4f7da601ca02aa546c5ef911a0b6595fdadf4e18
 - name: github.com/jonboulle/clockwork
   version: 72f9bd7c4e0c2a40055ab3d0f09654f730cce982
 - name: github.com/juju/ratelimit
@@ -210,10 +207,10 @@ imports:
 - name: google.golang.org/api
   version: a69f0f19d246419bb931b0ac8f4f8d3f3e6d4feb
   subpackages:
-  - iterator
   - option
   - transport
   - googleapi
+  - iterator
   - storage/v1
   - internal
   - googleapi/internal/uritemplates
@@ -259,7 +256,7 @@ imports:
 - name: gopkg.in/yaml.v2
   version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/kubernetes
-  version: 990cfe1516796f72ff162dd32b5aa918be1cffeb
+  version: 081ee2d5ad4c7bc1a5a656fef88f0155e9e8ee8d
   subpackages:
   - pkg/api
   - pkg/api/unversioned
