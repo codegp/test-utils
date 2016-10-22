@@ -22,35 +22,63 @@ func NewTestUtils(cp *cloudpersister.CloudPersister, kclient *kubeclient.KubeCli
 	}
 }
 
-func (u *TestUtils) BuildTestGametype(watch bool) error {
-	gameType, err := u.GetOrCreateTestGameType()
+// Builds a test gametype
+// Waits for the build to compelete if watch is true
+// Does not rebuild if a test game type already exists unless force is true
+func (u *TestUtils) BuildTestGametype(watch bool, force bool) error {
+	gameType, exists, err := u.getOrCreateTestGameType()
 	if err != nil {
 		return err
 	}
+
+	if exists && !force {
+		return nil
+	}
+
 	pod, err := u.kclient.BuildGameType(gameType)
 	if err != nil {
 		return err
 	}
 	if watch {
 		_, err = u.kclient.WatchToCompletion(pod)
+		if err != nil {
+			return err
+		}
 	}
+
+	_, err = u.getOrCreateTestMap(gameType)
+	if err != nil {
+		return err
+	}
+	
+	_, err = u.getOrCreateTestProject(gameType)
 	return err
 }
 
+// Runs a test game using the test game type
+// Waits for the game to complete if watch is true
 func (u *TestUtils) RunTestGame(watch bool) error {
-	gameType, err := u.GetOrCreateTestGameType()
+	gameType, exists, err := u.getOrCreateTestGameType()
 	if err != nil {
 		return err
 	}
-	m, err := u.GetOrCreateTestMap(gameType)
+
+	if !exists {
+		err = u.BuildTestGametype(true, true)
+		if err != nil {
+			return err
+		}
+	}
+
+	m, err := u.getOrCreateTestMap(gameType)
 	if err != nil {
 		return err
 	}
-	proj, err := u.GetOrCreateTestProject(gameType)
+	proj, err := u.getOrCreateTestProject(gameType)
 	if err != nil {
 		return err
 	}
-	game, err := u.CreateTestGame(gameType, proj, m)
+	game, err := u.createTestGame(gameType, proj, m)
 	if err != nil {
 		return err
 	}
@@ -64,32 +92,33 @@ func (u *TestUtils) RunTestGame(watch bool) error {
 	return err
 }
 
-func (u *TestUtils) GetOrCreateTestGameType() (*models.GameType, error) {
+// already exists
+func (u *TestUtils) getOrCreateTestGameType() (*models.GameType, bool, error) {
 	gameType, err := u.cp.QueryGameTypesByProp("Name", "testGameType")
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	if gameType != nil {
 		log.Println("Test game type found!")
-		return gameType, nil
+		return gameType, true, nil
 	}
 
 	log.Println("Test game type not found. Creating...")
 
 	bot, err := u.createBotType()
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	terrain, err := u.createTerrainType()
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	item, err := u.createItemType()
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	gameType = &models.GameType{
@@ -106,17 +135,17 @@ func (u *TestUtils) GetOrCreateTestGameType() (*models.GameType, error) {
 
 	gameType, err = u.cp.AddGameType(gameType)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	testCode, err := Asset("testfiles/testgametype.go.tmpl")
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	err = u.cp.WriteGameTypeCode(gameType.ID, testCode)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
-	return gameType, nil
+	return gameType, false, nil
 }
 
 func (u *TestUtils) createBotType() (*types.BotType, error) {
@@ -236,7 +265,7 @@ func (u *TestUtils) createItemType() (*types.ItemType, error) {
 	return itemType, nil
 }
 
-func (u *TestUtils) GetOrCreateTestMap(gameType *models.GameType) (*models.Map, error) {
+func (u *TestUtils) getOrCreateTestMap(gameType *models.GameType) (*models.Map, error) {
 	m, err := u.cp.QueryMapsByProp("Name", "testMap")
 	if err != nil {
 		return nil, err
@@ -278,7 +307,7 @@ func (u *TestUtils) GetOrCreateTestMap(gameType *models.GameType) (*models.Map, 
 	return m, nil
 }
 
-func (u *TestUtils) GetOrCreateTestProject(gameType *models.GameType) (*models.Project, error) {
+func (u *TestUtils) getOrCreateTestProject(gameType *models.GameType) (*models.Project, error) {
 	proj, err := u.cp.QueryProjectsByProp("Name", "testProject")
 	if err != nil {
 		return nil, err
@@ -337,7 +366,7 @@ func (u *TestUtils) GetOrCreateTestProject(gameType *models.GameType) (*models.P
 	return proj, nil
 }
 
-func (u *TestUtils) CreateTestGame(gameType *models.GameType, proj *models.Project, m *models.Map) (*models.Game, error) {
+func (u *TestUtils) createTestGame(gameType *models.GameType, proj *models.Project, m *models.Map) (*models.Game, error) {
 	log.Printf("Starting test game...")
 	game := &models.Game{
 		Created:    time.Now(),
