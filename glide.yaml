@@ -1,4 +1,4 @@
-package: github.com/codegp/testutils
+package: github.com/codegp/test-utils
 import:
 - package: github.com/codegp/cloud-persister
   subpackages:
