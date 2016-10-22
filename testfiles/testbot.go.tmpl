@@ -1,0 +1,28 @@
+package bot
+
+import (
+	"log"
+	"bitbucket.org/codegp/gametypebuilder/yielder"
+	"bitbucket.org/codegp/gametypebuilder/api"
+	gobj "bitbucket.org/codegp/gametypebuilder/gameobjects"
+	"bitbucket.org/codegp/gametypebuilder/ids"
+)
+
+func Run(apiClient *api.APIClient, y *yielder.Yielder) {
+	for {
+		log.Println("HI")
+		bot, e := apiClient.Me()
+		log.Println(bot)
+		log.Println(e)
+		if bot.MoveDelay < 1 {
+			for i := 0; i < 8; i++ {
+				if canMove, err := apiClient.CanMove(gobj.Direction(i), ids.TestMoveType_ID); err == nil && canMove {
+					log.Println("MOVING")
+					apiClient.Move(gobj.Direction(i), ids.TestMoveType_ID)
+					break
+				}
+			}
+		}
+		y.Yield()
+	}
+}

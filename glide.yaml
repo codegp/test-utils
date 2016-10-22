@@ -1,0 +1,9 @@
+package: github.com/codegp/testutils
+import:
+- package: github.com/codegp/cloud-persister
+  subpackages:
+  - models
+- package: github.com/codegp/game-object-types
+  subpackages:
+  - types
+- package: github.com/codegp/kube-client
