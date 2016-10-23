@@ -5,39 +5,41 @@ import (
 	"github.com/codegp/cloud-persister/models"
 )
 
+const unitTestTestID = 1
+
 func UnitTestBotType() *types.BotType {
-  botType := testBotType(1, 1)
-  botType.ID = 1
+  botType := testBotType(unitTestTestID, unitTestTestID)
+  botType.ID = unitTestTestID
   return botType
 }
 
 func UnitTestAttackType() *types.AttackType {
   attackType := testAttackType()
-  attackType.ID = 1
+  attackType.ID = unitTestTestID
   return attackType
 }
 
 func UnitTestMoveType() *types.MoveType {
   moveType := testMoveType()
-  moveType.ID = 1
+  moveType.ID = unitTestTestID
   return moveType
 }
 
 func UnitTestTerrainType() *types.TerrainType {
   terrainType := testTerrainType()
-  terrainType.ID = 1
+  terrainType.ID = unitTestTestID
   return terrainType
 }
 
 func UnitTestItemType() *types.ItemType {
   itemType := testItemType()
-  itemType.ID = 1
+  itemType.ID = unitTestTestID
   return itemType
 }
 
 func UnitTestGameType() *models.GameType {
-  gameType := testGameType(1, 1, 1)
-  gameType.ID = 1
+  gameType := testGameType(unitTestTestID, unitTestTestID, unitTestTestID)
+  gameType.ID = unitTestTestID
   return gameType
 }
 
