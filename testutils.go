@@ -22,7 +22,7 @@ func NewTestUtils(cp *cloudpersister.CloudPersister, kclient *kubeclient.KubeCli
 	}
 }
 
-// Builds a test gametype
+// BuildTestGametype builds a test gametype
 // Waits for the build to compelete if watch is true
 // Does not rebuild if a test game type already exists unless force is true
 func (u *TestUtils) BuildTestGametype(watch bool, force bool) error {
@@ -50,7 +50,7 @@ func (u *TestUtils) BuildTestGametype(watch bool, force bool) error {
 	if err != nil {
 		return err
 	}
-	
+
 	_, err = u.getOrCreateTestProject(gameType)
 	return err
 }
@@ -121,18 +121,7 @@ func (u *TestUtils) getOrCreateTestGameType() (*models.GameType, bool, error) {
 		return nil, false, err
 	}
 
-	gameType = &models.GameType{
-		Name:         "testGameType",
-		Version:      "testGameType",
-		BotTypes:     []int64{bot.ID},
-		TerrainTypes: []int64{terrain.ID},
-		ItemTypes:    []int64{item.ID},
-		ApiFuncs:     []string{"me", "canMove", "move"},
-		NumTeams:     1,
-		CreatorID:    12345,
-		Description:  "testGameType",
-	}
-
+	gameType = testGameType(bot.ID, terrain.ID, item.ID)
 	gameType, err = u.cp.AddGameType(gameType)
 	if err != nil {
 		return nil, false, err
@@ -150,49 +139,20 @@ func (u *TestUtils) getOrCreateTestGameType() (*models.GameType, bool, error) {
 
 func (u *TestUtils) createBotType() (*types.BotType, error) {
 	log.Println("Creating move type...")
-	moveType := &types.MoveType{
-		Name:  "testMoveType",
-		Delay: 0,
-		TakesDelayFromTerrain: false,
-	}
+	moveType := testMoveType()
 	moveType, err := u.cp.AddMoveType(moveType)
 	if err != nil {
 		return nil, err
 	}
 
-	attackType := &types.AttackType{
-		Name:             "testAttackType",
-		Damage:           1,
-		Delay:            0,
-		Range:            0,
-		Accuracy:         1,
-		AttackDelayDealt: 0,
-		MoveDelayDealt:   0,
-	}
-
+	attackType := testAttackType()
 	attackType, err = u.cp.AddAttackType(attackType)
 	if err != nil {
 		return nil, err
 	}
 
 	log.Println("Creating bot type...")
-	botType := &types.BotType{
-		Name:              "testBot",
-		AttackTypeIDs:     []int64{attackType.ID},
-		MoveTypeIDs:       []int64{moveType.ID},
-		CanSpawn:          true,
-		CanBeSpawned:      true,
-		SpawnDelay:        1,
-		MaxHealth:         100,
-		CanHeal:           true,
-		MoveDelayFactor:   1,
-		DamageFactor:      1,
-		AttackDelayFactor: 1,
-		RangeFactor:       1,
-		AccuracyFactor:    1,
-		SpawnDelayFactor:  1,
-	}
-
+	botType := testBotType(moveType.ID, attackType.ID)
 	botType, err = u.cp.AddBotType(botType)
 	if err != nil {
 		return nil, err
@@ -212,13 +172,7 @@ func (u *TestUtils) createBotType() (*types.BotType, error) {
 
 func (u *TestUtils) createTerrainType() (*types.TerrainType, error) {
 	log.Println("Creating terrain type...")
-	terrainType := &types.TerrainType{
-		Name:            "testTerrain",
-		CanBeOccupied:   true,
-		MoveDelayFactor: 1,
-		DamagePenalty:   1,
-	}
-
+	terrainType := testTerrainType()
 	terrainType, err := u.cp.AddTerrainType(terrainType)
 	if err != nil {
 		return nil, err
@@ -238,16 +192,7 @@ func (u *TestUtils) createTerrainType() (*types.TerrainType, error) {
 
 func (u *TestUtils) createItemType() (*types.ItemType, error) {
 	log.Println("Creating item type...")
-	itemType := &types.ItemType{
-		Name:              "testItem",
-		MoveDelayFactor:   1,
-		DamageFactor:      1,
-		AttackDelayFactor: 1,
-		RangeFactor:       1,
-		AccuracyFactor:    1,
-		SpawnDelayFactor:  1,
-	}
-
+	itemType := testItemType()
 	itemType, err := u.cp.AddItemType(itemType)
 	if err != nil {
 		return nil, err
@@ -277,12 +222,7 @@ func (u *TestUtils) getOrCreateTestMap(gameType *models.GameType) (*models.Map, 
 
 	log.Println("Test map not found. Creating...")
 
-	m = &models.Map{
-		Name:       "testMap",
-		GameTypeID: gameType.ID,
-		RoundLimit: 10,
-	}
-
+	m = testMap(gameType.ID)
 	m, err = u.cp.AddMap(m)
 	if err != nil {
 		return nil, err
