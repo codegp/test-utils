@@ -7,18 +7,18 @@ import (
 	"github.com/codegp/cloud-persister"
 	"github.com/codegp/cloud-persister/models"
 	"github.com/codegp/game-object-types/types"
-	"github.com/codegp/kube-client"
+	"github.com/codegp/job-client/jobclient"
 )
 
 type TestUtils struct {
 	cp      *cloudpersister.CloudPersister
-	kclient *kubeclient.KubeClient
+	jclient jobclient.JobClient
 }
 
-func NewTestUtils(cp *cloudpersister.CloudPersister, kclient *kubeclient.KubeClient) *TestUtils {
+func NewTestUtils(cp *cloudpersister.CloudPersister, jclient jobclient.JobClient) *TestUtils {
 	return &TestUtils{
 		cp:      cp,
-		kclient: kclient,
+		jclient: jclient,
 	}
 }
 
@@ -35,12 +35,12 @@ func (u *TestUtils) BuildTestGametype(watch bool, force bool) error {
 		return nil
 	}
 
-	pod, err := u.kclient.BuildGameType(gameType)
+	pod, err := u.jclient.BuildGameType(gameType)
 	if err != nil {
 		return err
 	}
 	if watch {
-		_, err = u.kclient.WatchToCompletion(pod)
+		err = pod.WatchToCompletion()
 		if err != nil {
 			return err
 		}
@@ -82,12 +82,16 @@ func (u *TestUtils) RunTestGame(watch bool) error {
 	if err != nil {
 		return err
 	}
-	pod, err := u.kclient.StartGame(game)
+	projs, err := u.cp.GetMultiProject(game.ProjectIDs)
+	if err != nil {
+		return err
+	}
+	pod, err := u.jclient.StartGame(game, projs)
 	if err != nil {
 		return err
 	}
 	if watch {
-		_, err = u.kclient.WatchToCompletion(pod)
+		err = pod.WatchToCompletion()
 	}
 	return err
 }
@@ -130,6 +134,7 @@ func (u *TestUtils) getOrCreateTestGameType() (*models.GameType, bool, error) {
 	if err != nil {
 		return nil, false, err
 	}
+	log.Println("WR ASS ", testCode)
 	err = u.cp.WriteGameTypeCode(gameType.ID, testCode)
 	if err != nil {
 		return nil, false, err

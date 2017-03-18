@@ -3,24 +3,36 @@ package main
 import (
 	"flag"
 	"log"
+	"time"
 
 	"github.com/codegp/cloud-persister"
-	"github.com/codegp/kube-client"
+	"github.com/codegp/env"
+	job "github.com/codegp/job-client"
 	"github.com/codegp/test-utils"
 )
 
 var (
+	cp         *cloudpersister.CloudPersister
 	testUtils  *testutils.TestUtils
 	forceBuild *bool
 	runGame    *bool
 )
 
 func init() {
-	cp, err := cloudpersister.NewCloudPersister()
+	var err error
+	for {
+		cp, err = cloudpersister.NewCloudPersister()
+		if err == nil || !env.IsLocal() {
+			break
+		}
+
+		log.Printf("Failed to create cloud persister. Confirm DSEmulator is running.\nError: %v", err)
+		time.Sleep(time.Millisecond * time.Duration(1000))
+	}
 	fatalOnErr(err)
-	kclient, err := kubeclient.NewClient()
+	jclient, err := job.GetJobClient()
 	fatalOnErr(err)
-	testUtils = testutils.NewTestUtils(cp, kclient)
+	testUtils = testutils.NewTestUtils(cp, jclient)
 
 	forceBuild = flag.Bool("fb", false, "force a new build even if one already exists, bool")
 	runGame = flag.Bool("r", false, "run test game, bool")
